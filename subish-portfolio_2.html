@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Subish — Portfolio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #080808;
+      --surface: #0f0f0f;
+      --surface2: #141414;
+      --accent: #ff2d78;
+      --accent2: #c2006e;
+      --accent-glow: rgba(255,45,120,0.15);
+      --gold: #e8c547;
+      --text: #f0ece4;
+      --muted: #5a5550;
+      --muted2: #8a8580;
+      --border: #1a1a1a;
+      --border2: #242424;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CURSOR ── */
+    .cursor {
+      width: 10px; height: 10px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width .2s, height .2s, background .2s;
+      mix-blend-mode: difference;
+    }
+    .cursor-ring {
+      width: 38px; height: 38px;
+      border: 1px solid rgba(255,45,120,0.4);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width .3s, height .3s, border-color .3s;
+    }
+    .cursor.hover { width: 18px; height: 18px; }
+    .cursor-ring.hover { width: 60px; height: 60px; border-color: rgba(255,45,120,0.7); }
+
+    /* ── NOISE ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 1000; opacity: .3;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 32px 72px;
+      background: linear-gradient(to bottom, rgba(8,8,8,.98) 0%, transparent 100%);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 26px; letter-spacing: 6px; color: var(--accent);
+      position: relative;
+    }
+    .nav-logo::after {
+      content: '';
+      position: absolute; bottom: -4px; left: 0;
+      width: 100%; height: 1px;
+      background: var(--accent); opacity: .3;
+    }
+    .nav-links { display: flex; gap: 52px; list-style: none; }
+    .nav-links a {
+      text-decoration: none; color: var(--muted);
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      transition: color .3s; position: relative; padding-bottom: 6px;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 1px; background: var(--accent); transition: width .35s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-links a:hover::after { width: 100%; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: grid; grid-template-columns: 1fr 1fr;
+      align-items: center;
+      padding: 0 72px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Radial glow behind content */
+    #hero::after {
+      content: '';
+      position: absolute; top: 20%; left: -10%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(255,45,120,.07) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-bg-text {
+      position: absolute; bottom: -100px; right: -20px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(180px, 24vw, 360px);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,45,120,0.04);
+      letter-spacing: -8px;
+      user-select: none; pointer-events: none; line-height: 1;
+    }
+
+    .hero-content { position: relative; z-index: 2; }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--accent); border: 1px solid rgba(255,45,120,.25);
+      padding: 10px 20px; margin-bottom: 44px;
+      opacity: 0; animation: fadeUp .8s .3s forwards;
+    }
+    .hero-tag::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #4ade80; box-shadow: 0 0 8px #4ade80;
+      animation: blink 2s infinite;
+    }
+
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(64px, 8.5vw, 114px);
+      line-height: .92; margin-bottom: 36px;
+      color: #FF8C69;
+      opacity: 0; animation: fadeUp .8s .5s forwards;
+    }
+    .hero-name em {
+      font-style: italic; font-weight: 700;
+      color: #FFA07A;
+      display: block; position: relative;
+    }
+
+    .hero-desc {
+      max-width: 420px; font-size: 16px; line-height: 1.9;
+      color: var(--muted2); margin-bottom: 60px;
+      opacity: 0; animation: fadeUp .8s .7s forwards;
+    }
+
+    .hero-cta {
+      display: flex; gap: 28px; align-items: center;
+      opacity: 0; animation: fadeUp .8s .9s forwards;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #FF8C69, #FFA07A, #FF7F50);
+      background-size: 200% 200%;
+      color: #080808;
+      padding: 18px 44px; font-size: 12px; font-weight: 600;
+      letter-spacing: 2.5px; text-transform: uppercase;
+      text-decoration: none; display: inline-flex; align-items: center; gap: 10px;
+      position: relative; overflow: hidden;
+      border: none; border-radius: 2px;
+      animation: btnGradientShift 4s ease infinite;
+      transition: transform .25s, box-shadow .25s, letter-spacing .25s;
+      box-shadow: 0 0 0 rgba(255,140,105,0);
+    }
+    .btn-primary::before {
+      content: ''; position: absolute; inset: -2px;
+      background: linear-gradient(135deg, #FF8C69, #FFD580, #FF7F50, #FF8C69);
+      background-size: 300% 300%;
+      border-radius: 3px;
+      animation: btnGradientShift 3s ease infinite;
+      z-index: -1; opacity: 0; transition: opacity .3s;
+      filter: blur(8px);
+    }
+    .btn-primary::after {
+      content: '→';
+      font-size: 16px;
+      display: inline-block;
+      transform: translateX(0);
+      transition: transform .3s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.03);
+      letter-spacing: 3px;
+      box-shadow:
+        0 0 20px rgba(255,140,105,.55),
+        0 0 50px rgba(255,140,105,.3),
+        0 0 90px rgba(255,140,105,.12),
+        0 8px 24px rgba(0,0,0,.4);
+    }
+    .btn-primary:hover::before { opacity: 1; }
+    .btn-primary:hover::after { transform: translateX(5px); }
+    .btn-primary:active { transform: translateY(-1px) scale(.99); }
+
+    @keyframes btnGradientShift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .btn-ghost {
+      color: var(--muted); font-size: 12px; letter-spacing: 1.5px;
+      text-decoration: none; display: flex; align-items: center; gap: 10px;
+      text-transform: uppercase; transition: color .3s;
+    }
+    .btn-ghost::before {
+      content: ''; width: 32px; height: 1px;
+      background: currentColor; transition: width .3s;
+    }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-ghost:hover::before { width: 52px; }
+
+    /* Hero card */
+    .hero-visual {
+      position: relative; z-index: 2;
+      display: flex; justify-content: flex-end; align-items: center;
+      opacity: 0; animation: fadeIn 1.2s .6s forwards;
+    }
+
+    .hero-card {
+      width: 360px; height: 460px;
+      background: var(--surface); border: 1px solid var(--border2);
+      position: relative; overflow: hidden;
+    }
+    .hero-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--gold), var(--accent2));
+    }
+    /* inner glow */
+    .hero-card::after {
+      content: ''; position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle at 40% 30%, rgba(255,45,120,.05) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-card-inner {
+      padding: 44px 38px; height: 100%;
+      display: flex; flex-direction: column; justify-content: space-between;
+      position: relative; z-index: 1;
+    }
+    .status-dot {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--muted); letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .status-dot::before {
+      content: ''; width: 7px; height: 7px; border-radius: 50%;
+      background: #4ade80; box-shadow: 0 0 8px #4ade80;
+      animation: blink 2s infinite;
+    }
+    .card-stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .card-stat h3 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 50px; color: var(--accent); line-height: 1;
+    }
+    .card-stat p {
+      font-size: 10px; color: var(--muted); letter-spacing: 1.5px;
+      text-transform: uppercase; margin-top: 4px;
+    }
+    .card-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      font-size: 10px; padding: 5px 12px;
+      border: 1px solid var(--border2); color: var(--muted);
+      letter-spacing: 1.5px; text-transform: uppercase;
+      transition: border-color .3s, color .3s;
+    }
+    .pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* vertical deco line */
+    .deco-line {
+      position: absolute; top: 50%; right: 53%;
+      transform: translateY(-50%);
+      width: 1px; height: 220px;
+      background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+      opacity: .4;
+    }
+
+    /* ── MARQUEE ── */
+    .marquee-band {
+      background: var(--accent);
+      padding: 16px 0; overflow: hidden; white-space: nowrap;
+    }
+    .marquee-inner { display: inline-flex; animation: marquee 22s linear infinite; }
+    .marquee-inner span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 17px; letter-spacing: 7px;
+      color: #080808; padding: 0 36px;
+    }
+
+    /* ── SECTIONS ── */
+    section { padding: 140px 72px; }
+
+    .section-label {
+      font-size: 10px; letter-spacing: 5px; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 20px;
+      display: flex; align-items: center; gap: 18px;
+    }
+    .section-label::before {
+      content: ''; width: 36px; height: 1px; background: var(--accent);
+    }
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 5.5vw, 70px);
+      line-height: 1.02; margin-bottom: 80px;
+    }
+    .section-title em { font-style: italic; color: var(--accent); }
+
+    /* ── ABOUT ── */
+    #about {
+      background: var(--surface);
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 120px; align-items: center;
+    }
+    .about-text p {
+      font-size: 17px; line-height: 2; color: #888480;
+      margin-bottom: 30px;
+    }
+    .about-text strong { color: var(--text); font-weight: 400; }
+
+    .about-image-block { position: relative; }
+    .about-img-placeholder {
+      width: 100%; aspect-ratio: 4/5;
+      background: #111;
+      border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .about-img-placeholder::after {
+      content: 'S';
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 200px; color: rgba(255,45,120,.06);
+    }
+    .about-img-placeholder::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(140deg, rgba(255,45,120,.06) 0%, transparent 55%);
+    }
+
+    .floating-badge {
+      position: absolute; bottom: -20px; right: -20px;
+      background: var(--accent); color: #080808;
+      padding: 18px 28px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 13px; letter-spacing: 3px;
+    }
+
+    .about-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 0; margin-top: 52px; border: 1px solid var(--border2);
+    }
+    .about-stat {
+      padding: 28px 24px; border-right: 1px solid var(--border2);
+      text-align: center;
+    }
+    .about-stat:last-child { border-right: none; }
+    .about-stat h4 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 40px; color: var(--accent); line-height: 1;
+    }
+    .about-stat p {
+      font-size: 10px; color: var(--muted); letter-spacing: 1.5px;
+      text-transform: uppercase; margin-top: 4px; margin-bottom: 0;
+    }
+
+    /* ── SKILLS ── */
+    #skills { background: var(--bg); }
+
+    .skills-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+    }
+    .skill-item {
+      background: var(--surface); padding: 50px 42px;
+      border: 1px solid var(--border); position: relative;
+      overflow: hidden; transition: transform .3s, border-color .3s;
+    }
+    .skill-item:hover { transform: translateY(-6px); border-color: var(--border2); }
+    .skill-item::after {
+      content: ''; position: absolute;
+      bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      transform: scaleX(0); transform-origin: left; transition: transform .45s;
+    }
+    .skill-item:hover::after { transform: scaleX(1); }
+
+    .skill-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 80px; color: rgba(255,45,120,.06);
+      position: absolute; top: 12px; right: 24px;
+      line-height: 1; pointer-events: none;
+    }
+    .skill-icon { font-size: 28px; margin-bottom: 28px; }
+    .skill-item h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; margin-bottom: 12px;
+    }
+    .skill-item p {
+      font-size: 14px; color: var(--muted); line-height: 1.85;
+    }
+    .skill-bar-wrap { margin-top: 24px; }
+    .skill-bar-label {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: .5px;
+    }
+    .skill-bar {
+      height: 2px; background: var(--border2); overflow: hidden;
+    }
+    .skill-bar-fill {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold));
+      transform: scaleX(0); transform-origin: left;
+      animation: fillBar 1.6s ease forwards; animation-play-state: paused;
+    }
+
+    /* ── PROJECTS ── */
+    #projects { background: var(--surface2); }
+
+    .projects-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+    }
+    .project-card {
+      background: var(--surface); padding: 52px 48px;
+      border: 1px solid var(--border); position: relative;
+      overflow: hidden; transition: border-color .35s;
+    }
+    .project-card:hover { border-color: rgba(255,45,120,.3); }
+    .project-card:hover .project-arrow { transform: translate(4px,-4px); opacity: 1; }
+
+    .project-card.featured {
+      grid-column: span 2;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 64px; align-items: center;
+    }
+
+    .project-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 88px; color: rgba(255,45,120,.06);
+      position: absolute; top: 16px; right: 28px;
+      line-height: 1; pointer-events: none;
+    }
+    .project-tag {
+      font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--accent2); margin-bottom: 20px;
+    }
+    .project-card h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px; margin-bottom: 16px; line-height: 1.2;
+    }
+    .project-card > div > p,
+    .project-card p.proj-desc {
+      font-size: 15px; color: var(--muted); line-height: 1.85; margin-bottom: 32px;
+    }
+    .project-link {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--accent); text-decoration: none;
+      transition: gap .3s;
+    }
+    .project-link:hover { gap: 18px; }
+
+    .project-visual {
+      aspect-ratio: 16/10;
+      background: var(--bg); border: 1px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; position: relative;
+    }
+    .project-visual::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 30% 40%, rgba(255,45,120,.04) 0%, transparent 70%);
+    }
+    .project-visual-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 52px; color: rgba(255,255,255,.06); letter-spacing: 6px;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: var(--bg); text-align: center;
+      padding: 180px 72px; position: relative; overflow: hidden;
+    }
+    .contact-bg-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(120px, 20vw, 280px);
+      color: transparent;
+      -webkit-text-stroke: 1px rgba(255,45,120,.04);
+      white-space: nowrap; user-select: none; pointer-events: none;
+    }
+    #contact .section-label { justify-content: center; }
+    #contact .section-label::before { display: none; }
+
+    .contact-headline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(52px, 8vw, 112px);
+      line-height: .95; margin-bottom: 52px; position: relative; z-index: 2;
+    }
+    .contact-headline em { font-style: italic; color: var(--accent); }
+
+    .contact-email {
+      display: block; position: relative; z-index: 2;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(22px, 3.5vw, 44px);
+      letter-spacing: 8px; color: var(--muted); text-decoration: none;
+      margin-bottom: 80px; transition: color .35s;
+    }
+    .contact-email:hover { color: var(--accent); }
+
+    .social-row {
+      display: flex; gap: 48px; justify-content: center;
+      list-style: none; position: relative; z-index: 2;
+    }
+    .social-row a {
+      font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+      color: var(--muted); text-decoration: none;
+      padding-bottom: 6px; position: relative; transition: color .3s;
+    }
+    .social-row a::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 0; height: 1px; background: var(--accent); transition: width .3s;
+    }
+    .social-row a:hover { color: var(--text); }
+    .social-row a:hover::after { width: 100%; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--surface); padding: 36px 72px;
+      display: flex; justify-content: space-between; align-items: center;
+      border-top: 1px solid var(--border);
+    }
+    footer p { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px; letter-spacing: 6px; color: var(--accent);
+    }
+
+    /* ── SCROLL PROGRESS ── */
+    .scroll-progress {
+      position: fixed; top: 0; left: 0; right: 0; height: 2px;
+      background: transparent; z-index: 9999;
+    }
+    .scroll-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--gold));
+      width: 0; transition: width .1s;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(32px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes blink {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:.5; transform:scale(1.3); }
+    }
+    @keyframes fillBar {
+      to { transform: scaleX(1); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(44px);
+      transition: opacity .75s ease, transform .75s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 900px) {
+      nav { padding: 24px 28px; }
+      .nav-links { display: none; }
+      #hero { grid-template-columns: 1fr; padding: 120px 28px 80px; }
+      .hero-visual, .deco-line { display: none; }
+      #about { grid-template-columns: 1fr; padding: 80px 28px; gap: 60px; }
+      section { padding: 80px 28px; }
+      .skills-grid, .projects-grid { grid-template-columns: 1fr; }
+      .project-card.featured { grid-column: 1; grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 12px; text-align: center; padding: 32px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scroll-progress"><div class="scroll-progress-bar" id="progressBar"></div></div>
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">SUBISH</div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-content">
+      <div class="hero-tag">Available for Work</div>
+      <h1 class="hero-name">
+        Hello,<br>I'm <em>Subish</em>
+      </h1>
+      <p class="hero-desc">
+        A creative developer &amp; designer crafting immersive digital experiences that blend aesthetics with purpose.
+      </p>
+      <div class="hero-cta">
+        <a href="#projects" class="btn-primary">View My Work</a>
+        <a href="#contact" class="btn-ghost">Get in touch</a>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-card-inner">
+          <div class="status-dot">Available for projects</div>
+          <div class="card-stat-grid">
+            <div class="card-stat"><h3>3+</h3><p>Years Exp.</p></div>
+            <div class="card-stat"><h3>20+</h3><p>Projects</p></div>
+            <div class="card-stat"><h3>15+</h3><p>Clients</p></div>
+            <div class="card-stat"><h3>100%</h3><p>Dedication</p></div>
+          </div>
+          <div class="card-pills">
+            <span class="pill">Design</span>
+            <span class="pill">Dev</span>
+            <span class="pill">Motion</span>
+            <span class="pill">Brand</span>
+            <span class="pill">UX</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-bg-text">SUBISH</div>
+    <div class="deco-line"></div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-band">
+    <div class="marquee-inner">
+      <span>DESIGN</span><span>·</span>
+      <span>DEVELOPMENT</span><span>·</span>
+      <span>CREATIVE</span><span>·</span>
+      <span>BRANDING</span><span>·</span>
+      <span>UI / UX</span><span>·</span>
+      <span>MOTION</span><span>·</span>
+      <span>DESIGN</span><span>·</span>
+      <span>DEVELOPMENT</span><span>·</span>
+      <span>CREATIVE</span><span>·</span>
+      <span>BRANDING</span><span>·</span>
+      <span>UI / UX</span><span>·</span>
+      <span>MOTION</span><span>·</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="about-text reveal">
+      <div class="section-label">About Me</div>
+      <h2 class="section-title">Crafting digital<br><em>experiences</em></h2>
+      <p>
+        I'm <strong>Subish</strong>, a passionate creative developer who lives at the intersection of design and technology. I build things that look great, feel intuitive, and perform brilliantly.
+      </p>
+      <p>
+        My approach is rooted in <strong>intentional design</strong> — every pixel, interaction, and line of code serves a purpose. From concept to deployment, I obsess over the details that make the difference.
+      </p>
+      <p>
+        When I'm not building, I'm exploring new aesthetics, experimenting with motion, and pushing the boundaries of what's possible on the web.
+      </p>
+      <div class="about-stats">
+        <div class="about-stat"><h4>3+</h4><p>Years</p></div>
+        <div class="about-stat"><h4>20+</h4><p>Projects</p></div>
+        <div class="about-stat"><h4>15+</h4><p>Clients</p></div>
+      </div>
+    </div>
+    <div class="about-image-block reveal reveal-delay-2">
+      <div class="about-img-placeholder"></div>
+      <div class="floating-badge">CREATIVE DEVELOPER</div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="section-label reveal">What I Do</div>
+    <h2 class="section-title reveal">Skills &amp;<br>Expertise</h2>
+    <div class="skills-grid">
+      <div class="skill-item reveal">
+        <div class="skill-num">01</div>
+        <div class="skill-icon">✦</div>
+        <h3>UI / UX Design</h3>
+        <p>Designing interfaces that are intuitive, accessible, and visually compelling — from wireframes to high-fidelity prototypes.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>90%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:90%"></div></div>
+        </div>
+      </div>
+      <div class="skill-item reveal reveal-delay-1">
+        <div class="skill-num">02</div>
+        <div class="skill-icon">◈</div>
+        <h3>Frontend Dev</h3>
+        <p>Building fast, responsive, and interactive web applications using modern HTML, CSS, and JavaScript frameworks.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>85%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:85%"></div></div>
+        </div>
+      </div>
+      <div class="skill-item reveal reveal-delay-2">
+        <div class="skill-num">03</div>
+        <div class="skill-icon">◉</div>
+        <h3>Motion Design</h3>
+        <p>Creating fluid animations and transitions that breathe life into digital products and engage users meaningfully.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>80%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:80%"></div></div>
+        </div>
+      </div>
+      <div class="skill-item reveal">
+        <div class="skill-num">04</div>
+        <div class="skill-icon">⬡</div>
+        <h3>Brand Identity</h3>
+        <p>Developing cohesive visual identities that communicate brand values and resonate with target audiences.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>78%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:78%"></div></div>
+        </div>
+      </div>
+      <div class="skill-item reveal reveal-delay-1">
+        <div class="skill-num">05</div>
+        <div class="skill-icon">△</div>
+        <h3>Photography</h3>
+        <p>Capturing moments with a creative eye — from product shoots to lifestyle photography that tells a story.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>88%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:88%"></div></div>
+        </div>
+      </div>
+      <div class="skill-item reveal reveal-delay-2">
+        <div class="skill-num">06</div>
+        <div class="skill-icon">❋</div>
+        <h3>Video Editing</h3>
+        <p>Crafting compelling video narratives with precise pacing, color grading, and sound design to elevate the story.</p>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-label"><span>Proficiency</span><span>82%</span></div>
+          <div class="skill-bar"><div class="skill-bar-fill" style="width:82%"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects">
+    <div class="section-label reveal">My Work</div>
+    <h2 class="section-title reveal">Selected<br>Projects</h2>
+    <div class="projects-grid">
+
+      <div class="project-card featured reveal">
+        <div>
+          <div class="project-tag">UI Design · Branding</div>
+          <h3>Brand Identity for a Digital Studio</h3>
+          <p class="proj-desc">A full visual identity project from logo to design system — creating a bold, memorable presence for a creative agency.</p>
+          <a href="#" class="project-link">View Project →</a>
+        </div>
+        <div class="project-visual">
+          <div class="project-visual-label">STUDIO</div>
+        </div>
+        <div class="project-num">01</div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-tag">Frontend Dev</div>
+        <h3>E-Commerce Experience</h3>
+        <p>A high-performance online store with immersive product pages and seamless checkout flow.</p>
+        <a href="#" class="project-link">View Project →</a>
+        <div class="project-num">02</div>
+      </div>
+
+      <div class="project-card reveal reveal-delay-1">
+        <div class="project-tag">Motion Design</div>
+        <h3>Social Media Campaign</h3>
+        <p>Motion graphics and animated assets for a viral social media launch, reaching 2M+ impressions.</p>
+        <a href="#" class="project-link">View Project →</a>
+        <div class="project-num">03</div>
+      </div>
+
+      <div class="project-card reveal">
+        <div class="project-tag">UX Design</div>
+        <h3>Mobile App Redesign</h3>
+        <p>A complete UX overhaul increasing user retention by 40% through improved information architecture.</p>
+        <a href="#" class="project-link">View Project →</a>
+        <div class="project-num">04</div>
+      </div>
+
+      <div class="project-card reveal reveal-delay-1">
+        <div class="project-tag">Photography</div>
+        <h3>Editorial Lookbook</h3>
+        <p>A full editorial shoot directing models, lighting, and post-production for a fashion brand's seasonal campaign.</p>
+        <a href="#" class="project-link">View Project →</a>
+        <div class="project-num">05</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="contact-bg-text">CONTACT</div>
+    <div class="section-label reveal">Get In Touch</div>
+    <h2 class="contact-headline reveal">Let's work<br>together <em>.</em></h2>
+    <a href="/cdn-cgi/l/email-protection#176462757e647f57727a767e7b3974787a" class="contact-email reveal"><span class="__cf_email__" data-cfemail="9fcccaddd6ccd7dfdad2ded6d3b1dcd0d2">[email&#160;protected]</span></a>
+    <ul class="social-row reveal">
+      <li><a href="#">Instagram</a></li>
+      <li><a href="#">Behance</a></li>
+      <li><a href="#">LinkedIn</a></li>
+      <li><a href="#">GitHub</a></li>
+    </ul>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">SUBISH</div>
+    <p>© 2026 Subish. All rights reserved.</p>
+    <p>Designed with ♥</p>
+  </footer>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ── Cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx=0, my=0, rx=0, ry=0;
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX; my = e.clientY;
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+    });
+
+    (function animRing() {
+      rx += (mx - rx) * .12;
+      ry += (my - ry) * .12;
+      ring.style.left = rx + 'px';
+      ring.style.top  = ry + 'px';
+      requestAnimationFrame(animRing);
+    })();
+
+    document.querySelectorAll('a, button, .skill-item, .project-card').forEach(el => {
+      el.addEventListener('mouseenter', () => { cursor.classList.add('hover'); ring.classList.add('hover'); });
+      el.addEventListener('mouseleave', () => { cursor.classList.remove('hover'); ring.classList.remove('hover'); });
+    });
+
+    // ── Scroll progress
+    window.addEventListener('scroll', () => {
+      const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+      document.getElementById('progressBar').style.width = pct + '%';
+    });
+
+    // ── Reveal on scroll
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 90);
+          obs.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+    // ── Skill bars
+    const barObs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.animationPlayState = 'running';
+          barObs.un
